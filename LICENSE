@@ -1,0 +1,36 @@
+XGams Project License
+Copyright (C) 2026 爔泺 (XyLuo)
+
+[PART 1: Base License | 基础协议]
+This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0).
+本项目采用 CC BY-NC-ND 4.0 (署名-非商业性使用-禁止演绎) 国际许可协议。
+
+Full legal text can be found at:
+https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode
+您可以通过以下链接查看协议简述：
+https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh
+
+----------------------------------------------------------------------
+
+[PART 2: Additional Terms | 附加条款]
+Notwithstanding the terms of the base license, the author grants the following permissions and restrictions:
+尽管有上述协议限制，作者额外授予/申明以下权利：
+
+1. Private Use | 私有使用:
+   You are free to modify the source code for personal, private use on your own servers without notification.
+   您可以出于学习或自用目的自由修改源码并在自己的服务器运行，无需向作者报备。
+
+2. Authorized Distribution | 授权分发:
+   Public redistribution of modified versions is strictly prohibited unless explicit authorization is obtained from XyLuo.
+   严禁私自公开发布或分发任何修改版本。若需发布二创版本，必须事先获得作者（爔泺）的明确授权。
+
+3. No Commercial Claim | 商业免责:
+   The author does not claim a share of revenue from secondary creations, but any commercial use involving this software must be authorized.
+   作者不抽取二创作品的销售分成，但任何涉及本软件的商业分发行为仍需获得作者许可。
+
+----------------------------------------------------------------------
+
+[PART 3: Disclaimer | 免责声明]
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+本软件按“现状”提供，不附带任何形式的明示或暗示保证。在任何情况下，对于因使用本软件或从事本软件其他活动而引起的任何索赔、损害或其他责任，作者均不承担任何法律责任。
