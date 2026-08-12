@@ -8,13 +8,11 @@ import com.xyluodys.xgams.Gomoku.GomokuPlaceCommand
 import com.xyluodys.xgams.Gomoku.GomokuStartCommand
 import com.xyluodys.xgams.dialog.gomoku.DialogRegistry
 import com.xyluodys.xgams.dialog.gomoku.DifficultyDialog
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.command.CommandBody
 import taboolib.common.platform.command.CommandHeader
 import taboolib.common.platform.command.subCommand
-import taboolib.common.platform.function.submit
 
 private val msg get() = MessageManager
 
@@ -133,7 +131,7 @@ object gomokuCommands {
         }
     }
 
-    // close子命令，关闭对话框（仅此核心功能）
+    // close子命令，关闭难度选择对话框（仅此核心功能）
     @CommandBody
     val close = subCommand {
         execute<ProxyCommandSender> { sender, _, _ ->
@@ -142,13 +140,9 @@ object gomokuCommands {
                 sender.sendMessage(msg.playerOnly)
                 return@execute
             }
-            // 结束当前棋局会话：移除记录，避免 AI 残留任务又把对话框弹回
-            GomokuPlaceCommand.gameMap.remove(player.uniqueId)
-            // 关闭客户端对话框（Paper Dialog API 的清除命令须在全局主线程派发，
-            // 故用 submit 切回主线程执行，避免 Folia 区域化下的 Dispatching command async）
-            submit {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dialog clear ${player.name}")
-            }
+            // 直接关闭玩家当前打开的对话框（Paper Dialog API：Audience.closeDialog）。
+            // 不经命令派发，故不依赖主线程，也不会触发 Folia 的 Dispatching command async。
+            player.closeDialog()
         }
     }
 }

@@ -48,9 +48,14 @@ object VCTSolver {
 
     // AND 节点：返回 true 表示攻击方在所有防守下都能赢
     private fun defendRec(board: Array<IntArray>, ai: Int, human: Int, maxDepth: Int): Boolean {
-        val defenses = threatMoves(board, human)
-        if (defenses.isEmpty()) return true   // 人类无任何威胁走法，攻击方已胜
         if (maxDepth <= 0) return false
+
+        val defenses = threatMoves(board, human)
+        if (defenses.isEmpty()) {
+            // 人类没有直接威胁走法不代表攻击方必胜，威胁链可能已断。
+            // 继续递归验证攻击方后续是否仍能走出必胜序列。
+            return attackRec(board, ai, human, maxDepth - 1) != null
+        }
 
         val sorted = defenses.sortedByDescending { it.level }
         for ((r, c, _) in sorted) {

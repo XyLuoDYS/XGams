@@ -34,7 +34,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.7-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("ink.ptms.core:v12101:12101:universal")
     compileOnly(kotlin("stdlib"))
     compileOnly(fileTree("libs"))

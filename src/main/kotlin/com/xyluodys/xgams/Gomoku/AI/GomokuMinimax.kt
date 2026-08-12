@@ -27,6 +27,7 @@ class GomokuMinimax(
 
     private companion object {
         const val INF = Int.MAX_VALUE / 2
+        const val MAX_EXTENSION_BUDGET = 12   // 单分支累计威胁扩展深度上限
     }
 
     /**
@@ -98,7 +99,7 @@ class GomokuMinimax(
         while (lower < upper) {
             if (timeUp() || iteration++ > 50) break
             val beta = if (guess == lower) guess + 1 else guess
-            val (score, move) = pvsRoot(board, depth, beta - 1, beta, bestMove)
+            val (score, move) = pvsRoot(board, depth, beta - 1, beta, bestMove, MAX_EXTENSION_BUDGET)
             if (move != null) bestMove = move
             if (score < beta) upper = score else { lower = score; guess = score }
         }
@@ -114,11 +115,13 @@ class GomokuMinimax(
         depth: Int,
         alpha: Int,
         beta: Int,
-        prevBest: Pair<Int, Int>?
+        prevBest: Pair<Int, Int>?,
+        extensionBudget: Int
     ): Pair<Int, Pair<Int, Int>?> {
         val candidates = getOrderedCandidates(board, aiPlayer, prevBest)
         if (candidates.isEmpty()) return 0 to null
 
+        val rootHash = tt.computeHash(board)
         var a = alpha
         var bestScore = Int.MIN_VALUE
         var bestMove: Pair<Int, Int>? = null
@@ -126,6 +129,7 @@ class GomokuMinimax(
         for ((i, move) in candidates.withIndex()) {
             val (r, c) = move
             board[r][c] = aiPlayer
+            val newHash = tt.toggleStone(rootHash, r, c, aiPlayer)
 
             // 快速检测胜利
             if (hasFive(board, r, c, aiPlayer)) {
@@ -133,17 +137,20 @@ class GomokuMinimax(
                 return AIScoring.WIN to move
             }
 
-            // 威胁扩展
-            val ext = if (useThreatExtension) getThreatExtension(board, r, c, aiPlayer) else 0
+            // 威胁扩展（受单分支累计预算限制）
+            val ext = if (useThreatExtension) {
+                getThreatExtension(board, r, c, aiPlayer, extensionBudget)
+            } else 0
             val searchDepth = depth - 1 + ext
+            val newBudget = extensionBudget - ext
 
             // PVS：第一个走法全窗口，其余零窗口
             val score = if (i == 0) {
-                -pvs(board, searchDepth, -beta, -a, false)
+                -pvs(board, searchDepth, -beta, -a, false, newHash, newBudget)
             } else {
-                val nullScore = -pvs(board, searchDepth, -a - 1, -a, false)
+                val nullScore = -pvs(board, searchDepth, -a - 1, -a, false, newHash, newBudget)
                 if (nullScore > a && nullScore < beta) {
-                    -pvs(board, searchDepth, -beta, -nullScore, false)
+                    -pvs(board, searchDepth, -beta, -nullScore, false, newHash, newBudget)
                 } else {
                     nullScore
                 }
@@ -166,19 +173,22 @@ class GomokuMinimax(
     /**
      * PVS 递归搜索。
      * @param isMaximizing true=AI回合(最大化), false=人类回合(最小化)
+     * @param hash 当前棋盘状态的增量 Zobrist 哈希
+     * @param extensionBudget 当前分支剩余威胁扩展预算
      */
     private fun pvs(
         board: Array<IntArray>,
         depth: Int,
         alpha: Int,
         beta: Int,
-        isMaximizing: Boolean
+        isMaximizing: Boolean,
+        hash: Long,
+        extensionBudget: Int
     ): Int {
         val alphaOrig = alpha
 
         val player = if (isMaximizing) aiPlayer else humanPlayer
 
-        val hash = tt.computeHash(board)
         val entry = tt.get(hash, depth)
         if (entry != null) {
             val (score, _, flag) = entry
@@ -208,28 +218,32 @@ class GomokuMinimax(
         for ((i, move) in candidates.withIndex()) {
             val (r, c) = move
             board[r][c] = player
+            val newHash = tt.toggleStone(hash, r, c, player)
 
             // 快速检测胜利
             if (hasFive(board, r, c, player)) {
-                board[r][c] = 0
                 // negamax 约定：从落子方视角，自己连成即获胜（+WIN）。
                 // 父节点会用负号翻转成对手视角，从而正确区分攻防。
                 val winScore = AIScoring.WIN - (maxDepth - depth)
-                tt.put(hash, winScore, depth, TranspositionTable.FLAG_EXACT)
+                tt.put(newHash, winScore, depth, TranspositionTable.FLAG_EXACT)
+                board[r][c] = 0
                 return winScore
             }
 
-            // 威胁扩展
-            val ext = if (useThreatExtension) getThreatExtension(board, r, c, player) else 0
+            // 威胁扩展（受单分支累计预算限制）
+            val ext = if (useThreatExtension) {
+                getThreatExtension(board, r, c, player, extensionBudget)
+            } else 0
             val searchDepth = depth - 1 + ext
+            val newBudget = extensionBudget - ext
 
             // PVS：第一个走法全窗口，其余零窗口
             val score = if (i == 0) {
-                -pvs(board, searchDepth, -beta, -a, !isMaximizing)
+                -pvs(board, searchDepth, -beta, -a, !isMaximizing, newHash, newBudget)
             } else {
-                val nullScore = -pvs(board, searchDepth, -a - 1, -a, !isMaximizing)
+                val nullScore = -pvs(board, searchDepth, -a - 1, -a, !isMaximizing, newHash, newBudget)
                 if (nullScore > a && nullScore < beta) {
-                    -pvs(board, searchDepth, -beta, -nullScore, !isMaximizing)
+                    -pvs(board, searchDepth, -beta, -nullScore, !isMaximizing, newHash, newBudget)
                 } else {
                     nullScore
                 }
@@ -357,15 +371,19 @@ class GomokuMinimax(
     /**
      * 判断落子后是否产生威胁（活三/冲四/活四），返回扩展深度
      * 注意：调用前该点已被设为 player，用只读的 threatLevel 评估，避免破坏棋盘
+     *
+     * @param budget 单分支剩余扩展预算；扩展后不能超过总上限
      */
-    private fun getThreatExtension(board: Array<IntArray>, r: Int, c: Int, player: Int): Int {
+    private fun getThreatExtension(board: Array<IntArray>, r: Int, c: Int, player: Int, budget: Int): Int {
+        if (budget <= 0) return 0
         val threat = BoardEvaluator.threatLevel(board, r, c, player)
-        return when {
+        val raw = when {
             threat >= AIScoring.OPEN_FOUR -> 2   // 活四 → +2
             threat >= AIScoring.FOUR -> 1        // 冲四 → +1
             threat >= AIScoring.OPEN_THREE -> 1  // 活三 → +1
             else -> 0
         }
+        return raw.coerceAtMost(budget)
     }
 
     /** 快速检查某个位置是否形成五连 */
