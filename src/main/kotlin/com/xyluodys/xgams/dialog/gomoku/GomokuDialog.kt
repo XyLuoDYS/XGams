@@ -2,6 +2,7 @@ package com.xyluodys.xgams.dialog.gomoku
 
 import com.xyluodys.xgams.Config.GomokuGUIConfig
 import com.xyluodys.xgams.Gomoku.GomokuGame
+import com.xyluodys.xgams.database.PlayerPrefsDatabase
 import com.xyluodys.xgams.util.TextParser
 import io.papermc.paper.dialog.Dialog
 import io.papermc.paper.registry.data.dialog.ActionButton
@@ -13,6 +14,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.entity.Player
+import taboolib.common.platform.function.submit
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
@@ -23,13 +25,24 @@ object DialogRegistry {
 
     fun getSize(player: Player): String = sizeMap.getOrDefault(player.uniqueId, "big")
 
+    // 直接设置某玩家的棋盘尺寸（用于启动时从数据库载入）
+    fun setSize(uuid: UUID, size: String) {
+        sizeMap[uuid] = size
+    }
+
+    // 获取当前所有玩家的棋盘尺寸映射（用于关闭时批量保存）
+    fun getAllSizes(): Map<UUID, String> = sizeMap.toMap()
+
     fun toggleSize(player: Player) {
         val current = getSize(player)
         val actions = GomokuGUIConfig.getActions(current)
         for (action in actions) {
             val parts = action.split(":")
             if (parts.size >= 2 && parts[0].trim() == "change") {
-                sizeMap[player.uniqueId] = parts[1].trim()
+                val next = parts[1].trim()
+                sizeMap[player.uniqueId] = next
+                // 切换后即时持久化，避免服务器异常退出时丢失本次设置
+                submit(async = true) { PlayerPrefsDatabase.setBoardSize(player.uniqueId, next) }
             }
         }
     }
@@ -142,7 +155,7 @@ object DialogRegistry {
                             game.winningLine.indexOfFirst { it.first == boardRow && it.second == col }
                         } else -1
                         val isWinMarked = winLineIndex >= 0 && winLineIndex < game.winMarkProgress
-                        val raw = GomokuGUIConfig.getStoneStyle(size, region, value, isLastMove, isWinMarked)
+                        val raw = GomokuGUIConfig.getStoneStyle(size, region, value, isLastMove, isWinMarked, boardRow, col)
                         line.append(renderCell(raw, useTexture, boardRow, col))
                         // 纹理模式：格子之间插入负空格对齐
                         if (col < totalCells - 1 && useTexture) {

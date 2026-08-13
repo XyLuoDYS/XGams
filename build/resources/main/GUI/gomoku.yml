@@ -102,6 +102,7 @@ Style:
       marked-white: "&e2"
       win-marked-black: "&a1"
       win-marked-white: "&a2"
+      star-empty: "&71"
     right:
       empty: "&70"
       black: "&c1"
@@ -175,6 +176,7 @@ Style:
       marked-white: "&e2"
       win-marked-black: "&a1"
       win-marked-white: "&a2"
+      star-empty: "&71"
     right:
       empty: "&70"
       black: "&c1"

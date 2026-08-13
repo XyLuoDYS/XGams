@@ -15,6 +15,7 @@ taboolib {
         install(Bukkit)
         install(CommandHelper)
         install(BukkitHook)
+        install(Database)
     }
     description {
         name = "XGams"

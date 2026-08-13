@@ -108,7 +108,7 @@ class GomokuMinimax(
     }
 
     /**
-     * PVS 根节点：返回 (评分, 最佳走法)。
+     * PVS 根节点：返回 (评分, 最佳走法)
      */
     private fun pvsRoot(
         board: Array<IntArray>,
@@ -171,7 +171,7 @@ class GomokuMinimax(
     }
 
     /**
-     * PVS 递归搜索。
+     * PVS 递归搜索
      * @param isMaximizing true=AI回合(最大化), false=人类回合(最小化)
      * @param hash 当前棋盘状态的增量 Zobrist 哈希
      * @param extensionBudget 当前分支剩余威胁扩展预算
@@ -222,8 +222,8 @@ class GomokuMinimax(
 
             // 快速检测胜利
             if (hasFive(board, r, c, player)) {
-                // negamax 约定：从落子方视角，自己连成即获胜（+WIN）。
-                // 父节点会用负号翻转成对手视角，从而正确区分攻防。
+                // negamax 约定：从落子方视角，自己连成即获胜（+WIN）
+                // 父节点会用负号翻转成对手视角，从而正确区分攻防
                 val winScore = AIScoring.WIN - (maxDepth - depth)
                 tt.put(newHash, winScore, depth, TranspositionTable.FLAG_EXACT)
                 board[r][c] = 0

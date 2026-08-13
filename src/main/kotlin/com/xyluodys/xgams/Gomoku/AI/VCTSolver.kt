@@ -52,8 +52,8 @@ object VCTSolver {
 
         val defenses = threatMoves(board, human)
         if (defenses.isEmpty()) {
-            // 人类没有直接威胁走法不代表攻击方必胜，威胁链可能已断。
-            // 继续递归验证攻击方后续是否仍能走出必胜序列。
+            // 人类没有直接威胁走法不代表攻击方必胜，威胁链可能已断
+            // 继续递归验证攻击方后续是否仍能走出必胜序列
             return attackRec(board, ai, human, maxDepth - 1) != null
         }
 

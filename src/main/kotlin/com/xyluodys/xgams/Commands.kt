@@ -140,8 +140,8 @@ object gomokuCommands {
                 sender.sendMessage(msg.playerOnly)
                 return@execute
             }
-            // 直接关闭玩家当前打开的对话框（Paper Dialog API：Audience.closeDialog）。
-            // 不经命令派发，故不依赖主线程，也不会触发 Folia 的 Dispatching command async。
+            // 直接关闭玩家当前打开的对话框（Paper Dialog API：Audience.closeDialog）
+            // 不经命令派发，故不依赖主线程，也不会触发 Folia 的 Dispatching command async
             player.closeDialog()
         }
     }

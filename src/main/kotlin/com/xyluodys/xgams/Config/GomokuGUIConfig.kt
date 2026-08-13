@@ -15,6 +15,20 @@ object GomokuGUIConfig {
         "left-bottom", "bottom", "right-bottom"
     )
 
+    /**
+     * 棋盘星位（天元 + 四角星），0-based (row, col)
+     * 记谱 d4/l4/h8/d12/l12 → (3,3)/(3,11)/(7,7)/(11,3)/(11,11)
+     * 该集合在行列交换下完全不变，因此不依赖 board 行/列方向约定
+     * 这些位置在未落子状态下使用各自区域的 starEmpty 样式渲染
+     */
+    val STAR_POSITIONS = setOf(
+        3 to 3,    // d4
+        3 to 11,   // l4
+        7 to 7,    // h8 天元
+        11 to 3,   // d12
+        11 to 11   // l12
+    )
+
     @Config("GUI/gomoku.yml")
     lateinit var config: Configuration
 
@@ -33,7 +47,9 @@ object GomokuGUIConfig {
         var markedBlack: String = "&e1",
         var markedWhite: String = "&e2",
         var winMarkedBlack: String = "&a1",
-        var winMarkedWhite: String = "&a2"
+        var winMarkedWhite: String = "&a2",
+        // 星位（天元+四角星）未落子时的显示样式；非空时用它，否则回退 empty
+        var starEmpty: String = "&71"
     )
     var bigStyles: Map<String, RegionStyle> = REGIONS.associateWith { RegionStyle() }
     var smallStyles: Map<String, RegionStyle> = REGIONS.associateWith { RegionStyle() }
@@ -113,7 +129,8 @@ object GomokuGUIConfig {
                 markedBlack = TextParser.unescape(config.getString("Style.big.$region.marked-black")) ?: "&e1",
                 markedWhite = TextParser.unescape(config.getString("Style.big.$region.marked-white")) ?: "&e2",
                 winMarkedBlack = TextParser.unescape(config.getString("Style.big.$region.win-marked-black")) ?: "&a1",
-                winMarkedWhite = TextParser.unescape(config.getString("Style.big.$region.win-marked-white")) ?: "&a2"
+                winMarkedWhite = TextParser.unescape(config.getString("Style.big.$region.win-marked-white")) ?: "&a2",
+                starEmpty = TextParser.unescape(config.getString("Style.big.$region.star-empty")) ?: "&71"
             )
         }
         smallStyles = REGIONS.associateWith { region ->
@@ -124,7 +141,8 @@ object GomokuGUIConfig {
                 markedBlack = TextParser.unescape(config.getString("Style.small.$region.marked-black")) ?: "&e1",
                 markedWhite = TextParser.unescape(config.getString("Style.small.$region.marked-white")) ?: "&e2",
                 winMarkedBlack = TextParser.unescape(config.getString("Style.small.$region.win-marked-black")) ?: "&a1",
-                winMarkedWhite = TextParser.unescape(config.getString("Style.small.$region.win-marked-white")) ?: "&a2"
+                winMarkedWhite = TextParser.unescape(config.getString("Style.small.$region.win-marked-white")) ?: "&a2",
+                starEmpty = TextParser.unescape(config.getString("Style.small.$region.star-empty")) ?: "&71"
             )
         }
 
@@ -169,11 +187,26 @@ object GomokuGUIConfig {
         placePitches = config.getStringList("Sound.place-pitch.pitches").mapNotNull { it.toFloatOrNull() }
     }
 
-    fun getStoneStyle(size: String, region: String, value: Int, marked: Boolean = false, winMarked: Boolean = false): String {
+    fun getStoneStyle(
+        size: String,
+        region: String,
+        value: Int,
+        marked: Boolean = false,
+        winMarked: Boolean = false,
+        boardRow: Int = -1,
+        col: Int = -1
+    ): String {
         val styles = if (size == "big") bigStyles else smallStyles
         val style = styles[region] ?: return "?"
         return when {
-            value == 0 -> style.empty
+            // 未落子：星位(d4/l4/h8/d12/l12)使用 starEmpty，否则普通空位
+            value == 0 -> {
+                if (STAR_POSITIONS.contains(boardRow to col) && style.starEmpty.isNotBlank()) {
+                    style.starEmpty
+                } else {
+                    style.empty
+                }
+            }
             value == 1 && winMarked -> style.winMarkedBlack
             value == 1 && marked -> style.markedBlack
             value == 1 -> style.black

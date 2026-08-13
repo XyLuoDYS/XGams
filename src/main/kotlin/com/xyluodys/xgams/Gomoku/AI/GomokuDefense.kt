@@ -1,12 +1,12 @@
 package com.xyluodys.xgams.Gomoku.AI
 
 /**
- * 通用防守工具：所有难度的「底线必堵 / 必胜」检查都走这里，保证逻辑单一来源。
+ * 通用防守工具
  *
  * 关键防守语义：
  *  - 活四(_XXXX_)是必胜形，两端都能成五，堵一端没用，因此必须在对方「活三/跳三」阶段
- *    就封堵其发展点（即对方落子能形成活四的那个空位）。
- *  - 冲四(XXXX_/_XXXX)的成五点由 findImmediateWin 兜底，本类不重复处理。
+ *    就封堵其发展点（即对方落子能形成活四的那个空位）
+ *  - 冲四(XXXX_/_XXXX)的成五点由 findImmediateWin 兜底，本类不重复处理
  */
 object GomokuDefense {
 

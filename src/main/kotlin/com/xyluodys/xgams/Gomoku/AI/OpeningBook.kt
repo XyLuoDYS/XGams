@@ -10,7 +10,7 @@ object OpeningBook {
     private const val SIZE = 15
 
     /**
-     * 返回 AI(白方) 的开局应对走法；不在开局范围返回 null。
+     * 返回 AI(白方) 的开局应对走法；不在开局范围返回 null
      */
     fun getMove(board: Array<IntArray>, ai: Int): Pair<Int, Int>? {
         val stones = mutableListOf<Triple<Int, Int, Int>>()

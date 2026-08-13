@@ -1,5 +1,6 @@
 package com.xyluodys.xgams.dialog.gomoku
 
+import com.xyluodys.xgams.Config.GomokuGUIConfig
 import com.xyluodys.xgams.util.TextParser
 import io.papermc.paper.dialog.Dialog
 import io.papermc.paper.registry.data.dialog.ActionButton
@@ -9,6 +10,7 @@ import io.papermc.paper.registry.data.dialog.body.DialogBody
 import io.papermc.paper.registry.data.dialog.type.DialogType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.entity.Player
 
 /**
@@ -34,23 +36,20 @@ object DifficultyDialog {
             400
         )
 
-        val easyButton = ActionButton.builder(
+        val easyButton = DialogBody.plainMessage(
             TextParser.parse("&a[简单]", null, false)
-        ).width(120)
-            .action(DialogAction.staticAction(ClickEvent.runCommand("/gomoku difficulty easy")))
-            .build()
+                .clickEvent(ClickEvent.runCommand("/gomoku difficulty easy"))
+        )
 
-        val mediumButton = ActionButton.builder(
+        val mediumButton = DialogBody.plainMessage(
             TextParser.parse("&e[中等]", null, false)
-        ).width(120)
-            .action(DialogAction.staticAction(ClickEvent.runCommand("/gomoku difficulty medium")))
-            .build()
+                .clickEvent(ClickEvent.runCommand("/gomoku difficulty medium"))
+        )
 
-        val hardButton = ActionButton.builder(
+        val hardButton = DialogBody.plainMessage(
             TextParser.parse("&c[困难]", null, false)
-        ).width(120)
-            .action(DialogAction.staticAction(ClickEvent.runCommand("/gomoku difficulty hard")))
-            .build()
+                .clickEvent(ClickEvent.runCommand("/gomoku difficulty hard"))
+        )
 
         val closeButton = ActionButton.builder(
             TextParser.parse("&7关闭", null, false)
@@ -64,10 +63,10 @@ object DifficultyDialog {
                     DialogBase.builder(title)
                         .pause(false)
                         .afterAction(DialogBase.DialogAfterAction.NONE)
-                        .body(listOf(body))
+                        .body(listOf(body, easyButton, mediumButton, hardButton))
                         .build()
                 )
-                .type(DialogType.multiAction(listOf(easyButton, mediumButton, hardButton, closeButton), null, 1))
+                .type(DialogType.multiAction(listOf(closeButton), null, 1))
         }
 
         player.showDialog(dialog)
