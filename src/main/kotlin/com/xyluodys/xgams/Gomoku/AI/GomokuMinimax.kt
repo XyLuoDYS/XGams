@@ -59,6 +59,11 @@ class GomokuMinimax(
             VCTSolver.attack(board, aiPlayer, humanPlayer, vctDepth)?.let { return it }
         }
 
+        // === 连贯进攻：无必胜路线时，优先延伸己方活二/活三，保持进攻连续性 ===
+        // 前面已处理双方成五/活四威胁与开局库，此处安全；
+        // 避免出现「自己有活二却不去活三、反而跑去开新活二」的进攻中断
+        GomokuAttack.findExtendThree(board, aiPlayer)?.let { return it }
+
         // === 迭代加深 + MTD(f) ===
         val rootMoves = getOrderedCandidates(board, aiPlayer, null)
         if (rootMoves.isEmpty()) return size / 2 to size / 2

@@ -1,0 +1,16 @@
+commands:
+  gomoku:
+    disabled: '§c该功能已被禁用！'
+    player-only: '§c只有玩家可以使用此命令!'
+    no-game: '§c你还没有开始游戏!'
+    place-usage: '§c用法: /gomoku place <行> <列>'
+    place-invalid: '§c参数错误: 行和列都必须是数字! 你输入的是 {arg1} {arg2}'
+    place-bounds: '§c落子失败: 坐标越界，行列范围 0-14!'
+    place-occupied: '§c落子失败: 该位置已有棋子!'
+    game-over: '§c游戏已结束！使用 /gomoku play 开始新局'
+    win: '§e{winner}获胜！使用 /gomoku play 开始新局'
+    draw: '§e平局！棋盘已满，使用 /gomoku play 开始新局'
+    reload-success: '§a配置文件已重新加载！'
+  default:
+    # 默认消息，建议和上面的disabled设为一样的
+    disabled: '§c该命令已被禁用！'

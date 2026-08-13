@@ -173,8 +173,10 @@ object BoardEvaluator {
         if (totalFours >= 1 && threes >= 1) return AIScoring.FOUR_THREE
         if (threes >= 2) return AIScoring.DOUBLE_THREE
 
-        // 单形：取各方向中的最大威胁值
-        return shapes.maxOfOrNull { AIScoring.shapeScore(it) } ?: AIScoring.NONE
+        // 单形：累加各方向的形状分（而非只取最大值），
+        // 这样「双活二」「多方向威胁」能被正确反映，避免走法排序丢失信息；
+        // 活三(1000) 仍远高于单活二(50)，保证搜索与排序都优先延伸最强棋形
+        return shapes.sumOf { AIScoring.shapeScore(it) }
     }
 
     /**
