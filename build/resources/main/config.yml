@@ -1,9 +1,0 @@
-commands:
-  gomoku:
-    enabled: true
-
-# 定时清理离线玩家数据的间隔（分钟）
-# 每隔指定分钟数，自动清理不在线玩家的游戏数据和尺寸偏好
-cleanup:
-  interval-minutes: 5
-  cleanup-message: true
